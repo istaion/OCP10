@@ -6,7 +6,7 @@ class Project(models.Model):
     title = models.CharField(max_length=128)
     description = models.TextField(max_length=2048, blank=True)
     type = models.CharField(max_length=128)
-    author = models.ForeignKey(
+    author_user_id = models.ForeignKey(
         to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     contributors = models.ManyToManyField(settings.AUTH_USER_MODEL, through='Contributor', related_name='contributions')
 
