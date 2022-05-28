@@ -1,39 +1,49 @@
 from django.db import models
 from django.conf import settings
 
+PROJECT_CHOICES = (('Back-end', 'Back-end'), ('Front-end', 'Front-end'), ('iOS', 'iOS',), ('Android', 'Android'))
+
 
 class Project(models.Model):
     title = models.CharField(max_length=128)
-    description = models.TextField(max_length=2048, blank=True)
-    type = models.CharField(max_length=128)
-    author_user_id = models.ForeignKey(
+    description = models.CharField(max_length=2048, blank=True)
+    type = models.CharField(choices=PROJECT_CHOICES, max_length=128)
+    author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     contributors = models.ManyToManyField(settings.AUTH_USER_MODEL, through='Contributor', related_name='contributions')
+
+
+ROLE_CHOICES = (('author', 'author'), ('contributor', 'contributor'))
 
 
 class Contributor(models.Model):
     contributor = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     project = models.ForeignKey(Project, on_delete=models.CASCADE)
-    role = models.CharField(max_length=128)
+    role = models.CharField(choices=ROLE_CHOICES, max_length=128)
 
     class Meta:
         unique_together = ('contributor', 'project')
 
 
+PRIORITY_CHOICES = (('FAIBLE', 'FAIBLE'), ('MOYENNE', 'MOYENNE'), ('ELEVE', 'ELEVE',))
+TAG_CHOICES = (('BUG', 'BUG'), ('AMELIORATION', 'AMELIORATION'), ('TACHE', 'TACHE'))
+STATUS_CHOICES = (('A faire', 'A faire'), ('En cours', 'En cours'), ('Terminé', 'Terminé'))
+
+
 class Issue(models.Model):
     title = models.CharField(max_length=128)
-    desc = models.CharField(max_length=128)
-    tag = models.CharField(max_length=128)
-    priority = models.CharField(max_length=128)
+    desc = models.CharField(max_length=2048)
+    tag = models.CharField(choices=TAG_CHOICES, max_length=128)
+    priority = models.CharField(choices=PRIORITY_CHOICES, max_length=128)
     project = models.ForeignKey(to=Project, on_delete=models.CASCADE)
-    status = models.CharField(max_length=128)
+    status = models.CharField(choices=STATUS_CHOICES, max_length=128)
     author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_time = models.DateTimeField(auto_now_add=True)
 
 
 class Comment(models.Model):
-    description = models.TextField(max_length=2048)
+    description = models.CharField(max_length=2048)
     author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     issue = models.ForeignKey(to=Issue, on_delete=models.CASCADE)
