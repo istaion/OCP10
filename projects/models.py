@@ -9,7 +9,7 @@ class Project(models.Model):
     title = models.CharField(max_length=128)
     description = models.CharField(max_length=2048, blank=True)
     type = models.CharField(choices=PROJECT_CHOICES, max_length=128)
-    author_user = models.ForeignKey(
+    author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     contributors = models.ManyToManyField(settings.AUTH_USER_MODEL, through='Contributor', related_name='contributions')
 
@@ -38,16 +38,16 @@ class Issue(models.Model):
     priority = models.CharField(choices=PRIORITY_CHOICES, max_length=128)
     project = models.ForeignKey(to=Project, on_delete=models.CASCADE)
     status = models.CharField(choices=STATUS_CHOICES, max_length=128)
-    author_user = models.ForeignKey(
+    author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    assignee_user = models.ForeignKey(
+    assignee = models.ForeignKey(
         to=User, default=settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name='assignee')
     created_time = models.DateTimeField(auto_now_add=True)
 
 
 class Comment(models.Model):
     description = models.CharField(max_length=2048)
-    author_user = models.ForeignKey(
+    author = models.ForeignKey(
         to=settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     issue = models.ForeignKey(to=Issue, on_delete=models.CASCADE)
     created_time = models.DateTimeField(auto_now_add=True)
