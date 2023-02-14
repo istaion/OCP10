@@ -5,6 +5,7 @@ from projects.serializers import ProjectSerializer, IssueSerializer, ProjectIdSe
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
+from authentication.permissions import ProjectPermission
 
 
 # /projects/
@@ -36,7 +37,7 @@ class ProjectsView(ModelViewSet):
                                      status=status.HTTP_400_BAD_REQUEST)
 
 class ProjectIdView(ModelViewSet):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ProjectPermission]
     queryset = Project.objects.all()
     serializer_class = ProjectIdSerializer
 
@@ -47,6 +48,7 @@ class ProjectIdView(ModelViewSet):
 
     def update(self, request, *args, **kwargs):
         obj = get_object_or_404(Project, id=kwargs['project_id'])
+        self.check_object_permissions(self.request, obj)
         serializer = ProjectIdSerializer(obj, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -56,6 +58,7 @@ class ProjectIdView(ModelViewSet):
 
     def delete(self, request, *args, **kwargs):
         obj = get_object_or_404(Project, id=kwargs['project_id'])
+        self.check_object_permissions(self.request, obj)
         title = obj.title
         self.perform_destroy(obj)
         message = 'Vous avez supprimé le projet :' + str(title)
