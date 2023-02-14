@@ -15,16 +15,21 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework import routers
-from projects.views import ProjectViewset, IssueViewset
-
-router = routers.SimpleRouter()
-router.register('project', ProjectViewset, basename='project')
-router.register('issue', IssueViewset, basename='issue')
+from authentication.views import UserSignupView
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
+from projects.views import (
+    ProjectsView,
+)
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
-    path('api/', include(router.urls)),
+    path('signup/', UserSignupView.as_view({'post': 'create'}), name='signup'),
+    path('login/', TokenObtainPairView.as_view(), name='login'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('projects/', ProjectsView.as_view({'get': 'list', 'post': 'create'})),
 ]

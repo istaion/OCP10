@@ -1,24 +1,35 @@
-from rest_framework.response import Response
+from rest_framework import status, response
 from rest_framework.viewsets import ReadOnlyModelViewSet
-
-from projects.models import Project, Issue
+from projects.models import Project, Issue, Contributor
 from projects.serializers import ProjectSerializer, IssueSerializer
+from rest_framework.viewsets import ModelViewSet
+from rest_framework.permissions import IsAuthenticated
 
 
-class ProjectViewset(ReadOnlyModelViewSet):
+# /projects/
+class ProjectsView(ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
-    def get_queryset(self):
-        return Project.objects.all()
+    # gets list of Projects
+    def list(self, request, *args, **kwargs):
+        qs = Project.objects.filter(contributors=request.user)
+        serializer = self.serializer_class(qs, many=True)
+        return response.Response(serializer.data,
+                                 status=status.HTTP_200_OK)
 
-
-class IssueViewset(ReadOnlyModelViewSet):
-    serializer_class = IssueSerializer
-
-    def get_queryset(self):
-        queryset = Issue.objects.all()
-        project_id = self.request.GET.get('project_id')
-        if project_id is not None:
-            queryset = queryset.filter(project_id=project_id)
-        return queryset
-
+    # creates a new project
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            project = serializer.save(author=request.user)
+            contributor = Contributor.objects.create(project=project,
+                                                     contributor=request.user,
+                                                     role='author')
+            contributor.save()
+            return response.Response(serializer.data,
+                                     status=status.HTTP_201_CREATED)
+        else:
+            return response.Response(serializer.errors,
+                                     status=status.HTTP_400_BAD_REQUEST)
