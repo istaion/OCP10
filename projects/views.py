@@ -1,7 +1,7 @@
 from rest_framework import status, response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from projects.models import Project, Issue, Contributor
-from projects.serializers import ProjectSerializer, IssueSerializer
+from projects.serializers import ProjectSerializer, IssueSerializer, ProjectIdSerializer
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 
@@ -33,3 +33,15 @@ class ProjectsView(ModelViewSet):
         else:
             return response.Response(serializer.errors,
                                      status=status.HTTP_400_BAD_REQUEST)
+
+class ProjectIdView(ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    queryset = Project.objects.all()
+    serializer_class = ProjectIdSerializer
+
+    def retrieve (self, request, *args, **kwargs):
+        if Project.objects.get(id=kwargs['project_id']):
+            res = Project.objects.get(id=kwargs['project_id'])
+            project = ProjectIdSerializer(res, many=False)
+            return response.Response(project.data,
+                            status=status.HTTP_200_OK)

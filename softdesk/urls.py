@@ -22,6 +22,7 @@ from rest_framework_simplejwt.views import (
 )
 from projects.views import (
     ProjectsView,
+    ProjectIdView,
 )
 
 
@@ -32,4 +33,6 @@ urlpatterns = [
     path('login/', TokenObtainPairView.as_view(), name='login'),
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('projects/', ProjectsView.as_view({'get': 'list', 'post': 'create'})),
+    path('projects/<int:project_id>/', ProjectIdView.as_view({'get': 'retrieve', 'put': 'update',
+                                                              'delete': 'destroy'})),
 ]
