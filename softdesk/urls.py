@@ -34,5 +34,5 @@ urlpatterns = [
     path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('projects/', ProjectsView.as_view({'get': 'list', 'post': 'create'})),
     path('projects/<int:project_id>/', ProjectIdView.as_view({'get': 'retrieve', 'put': 'update',
-                                                              'delete': 'destroy'})),
+                                                              'delete': 'delete'})),
 ]

@@ -53,3 +53,12 @@ class ProjectIdView(ModelViewSet):
             return response.Response(serializer.data)
         return response.Response(serializer.errors,
                         status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        obj = get_object_or_404(Project, id=kwargs['project_id'])
+        title = obj.title
+        self.perform_destroy(obj)
+        message = 'Vous avez supprimé le projet :' + str(title)
+        return response.Response({'message': message},
+                        status=status.HTTP_204_NO_CONTENT)
+
