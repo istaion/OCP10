@@ -1,7 +1,7 @@
 from rest_framework import status, response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from projects.models import Project, Issue, Contributor
-from projects.serializers import ProjectSerializer, IssueSerializer, ProjectIdSerializer
+from projects.serializers import ProjectSerializer, IssueSerializer, ProjectIdSerializer, ContributorsSerializer
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
@@ -43,13 +43,13 @@ class ProjectIdView(ModelViewSet):
 
     def retrieve (self, request, *args, **kwargs):
         obj = get_object_or_404(Project, id=kwargs['project_id'])
-        project = ProjectIdSerializer(obj, many=False)
+        project = self.serializer_class(obj, many=False)
         return response.Response(project.data, status=status.HTTP_200_OK)
 
     def update(self, request, *args, **kwargs):
         obj = get_object_or_404(Project, id=kwargs['project_id'])
         self.check_object_permissions(self.request, obj)
-        serializer = ProjectIdSerializer(obj, data=request.data, partial=True)
+        serializer = self.serializer_class(obj, data=request.data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return response.Response(serializer.data)
@@ -65,3 +65,25 @@ class ProjectIdView(ModelViewSet):
         return response.Response({'message': message},
                         status=status.HTTP_204_NO_CONTENT)
 
+class ContributorsView(ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    queryset = Contributor.objects.all()
+    serializer_class = ContributorsSerializer
+
+    def list(self, request, *args, **kwargs):
+        project = get_object_or_404(Project, id=kwargs['project_id'])
+        qs = Contributor.objects.filter(project=project)
+        serializer = self.serializer_class(qs, many=True)
+        return response.Response(serializer.data,
+                                 status=status.HTTP_200_OK)
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
+        project = get_object_or_404(Project, id=kwargs['project_id'])
+        if serializer.is_valid():
+            serializer.save(project=project, role='contributor')
+            return response.Response(serializer.data,
+                                     status=status.HTTP_201_CREATED)
+        else:
+            return response.Response(serializer.errors,
+                                     status=status.HTTP_400_BAD_REQUEST)
