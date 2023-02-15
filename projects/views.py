@@ -93,8 +93,8 @@ class ContributorsView(ModelViewSet):
     def delete(self, request, *args, **kwargs):
         project = get_object_or_404(Project, id=kwargs['project_id'])
         self.check_object_permissions(self.request, project)
-        contributor = get_object_or_404(Contributor, id=kwargs['user_id'])
         user = get_object_or_404(User, id=kwargs['user_id'])
+        contributor = Contributor.objects.filter(project=project).filter(contributor=user)
         name = user.username
         self.perform_destroy(contributor)
         message = 'L\'utilisateur :' + str(name) + 'ne fait plus parti du projet.'
