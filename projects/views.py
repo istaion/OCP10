@@ -66,7 +66,7 @@ class ProjectIdView(ModelViewSet):
                         status=status.HTTP_204_NO_CONTENT)
 
 class ContributorsView(ModelViewSet):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ProjectPermission]
     queryset = Contributor.objects.all()
     serializer_class = ContributorsSerializer
 
@@ -80,6 +80,7 @@ class ContributorsView(ModelViewSet):
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         project = get_object_or_404(Project, id=kwargs['project_id'])
+        self.check_object_permissions(self.request, project)
         if serializer.is_valid():
             serializer.save(project=project, role='contributor')
             return response.Response(serializer.data,

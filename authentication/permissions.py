@@ -9,7 +9,7 @@ class ProjectPermission(BasePermission):
             return False
 
     def has_object_permission(self, request, view, obj):
-        if request.method in ("PUT", "DELETE"):
+        if request.method in ("PUT", "DELETE", "POST"):
             return obj.author == request.user
         else:
             return False
