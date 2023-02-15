@@ -6,6 +6,7 @@ from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
 from authentication.permissions import ProjectPermission
+from authentication.models import User
 
 
 # /projects/
@@ -88,3 +89,14 @@ class ContributorsView(ModelViewSet):
         else:
             return response.Response(serializer.errors,
                                      status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        project = get_object_or_404(Project, id=kwargs['project_id'])
+        self.check_object_permissions(self.request, project)
+        contributor = get_object_or_404(Contributor, id=kwargs['user_id'])
+        user = get_object_or_404(User, id=kwargs['user_id'])
+        name = user.username
+        self.perform_destroy(contributor)
+        message = 'L\'utilisateur :' + str(name) + 'ne fait plus parti du projet.'
+        return response.Response({'message': message},
+                        status=status.HTTP_204_NO_CONTENT)

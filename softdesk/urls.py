@@ -37,4 +37,5 @@ urlpatterns = [
     path('projects/<int:project_id>/', ProjectIdView.as_view({'get': 'retrieve', 'put': 'update',
                                                               'delete': 'delete'})),
     path('projects/<int:project_id>/users/', ContributorsView.as_view({'get': 'list', 'post': 'create'})),
+    path('projects/<int:project_id>/users/<int:user_id>/', ContributorsView.as_view({'delete': 'delete'})),
 ]
