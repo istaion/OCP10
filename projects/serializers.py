@@ -12,8 +12,13 @@ class ProjectSerializer(ModelSerializer):
 class IssueSerializer(ModelSerializer):
     class Meta:
         model = Issue
-        fields = ['id', 'title', 'desc', 'tag', 'priority', 'project', 'status', 'created_time']
-
+        fields = ['title', 'desc', 'tag', 'priority', 'status', 'assignee']
+        extra_kwargs = {
+            'id': {'read_only': True},
+            'author': {'read_only': True},
+            'created_time': {'read_only': True},
+            'project': {'read_only': True}
+        }
 
 class ProjectIdSerializer(ModelSerializer):
     class Meta:

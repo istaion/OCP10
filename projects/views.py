@@ -100,3 +100,35 @@ class ContributorsView(ModelViewSet):
         message = 'L\'utilisateur :' + str(name) + 'ne fait plus parti du projet.'
         return response.Response({'message': message},
                         status=status.HTTP_204_NO_CONTENT)
+
+
+class IssuesView(ModelViewSet):
+    permission_classes = [IsAuthenticated, ProjectPermission]
+    serializer_class = IssueSerializer
+
+    def list(self, request, *args, **kwargs):
+        project = get_object_or_404(Project, id=kwargs['project_id'])
+        qs = Issue.objects.filter(project=project)
+        serializer = self.serializer_class(qs, many=True)
+        return response.Response(serializer.data,
+                                 status=status.HTTP_200_OK)
+
+    # creates a new project
+    def create(self, request, *args, **kwargs):
+        project = get_object_or_404(Project, id=kwargs['project_id'])
+        if 'assignee' in kwargs:
+            assignee = get_object_or_404(User, id=kwargs['assignee'])
+            if not Contributor.objects.filter(project=project).filter(contributor=assignee).exists():
+                name = assignee.username
+                message = 'L\'utilisateur :' + str(name) + 'ne fait pas parti du projet et ne peut être assigné.'
+                return response.Response({'message': message},
+                                         status=status.HTTP_200_OK)
+        else:
+            assignee = request.user
+        serializer = self.serializer_class(data=request.data)
+        """control if the assignee user is a contributor :"""
+        if serializer.is_valid():
+            serializer.save(author=request.user, project=project, assignee=assignee)
+            return response.Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
