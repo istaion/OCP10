@@ -9,8 +9,6 @@ class ObjectPermission(BasePermission):
             return False
 
     def has_object_permission(self, request, view, obj):
-        if request.method in ("PUT", "DELETE", "POST"):
-            return obj.author == request.user
-        else:
-            return False
+        return obj.author == request.user
+
 
