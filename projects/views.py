@@ -5,7 +5,7 @@ from projects.serializers import ProjectSerializer, IssueSerializer, ProjectIdSe
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
-from authentication.permissions import ProjectPermission
+from authentication.permissions import ObjectPermission
 from authentication.models import User
 
 
@@ -38,7 +38,7 @@ class ProjectsView(ModelViewSet):
                                      status=status.HTTP_400_BAD_REQUEST)
 
 class ProjectIdView(ModelViewSet):
-    permission_classes = [IsAuthenticated, ProjectPermission]
+    permission_classes = [IsAuthenticated, ObjectPermission]
     queryset = Project.objects.all()
     serializer_class = ProjectIdSerializer
 
@@ -67,7 +67,7 @@ class ProjectIdView(ModelViewSet):
                         status=status.HTTP_204_NO_CONTENT)
 
 class ContributorsView(ModelViewSet):
-    permission_classes = [IsAuthenticated, ProjectPermission]
+    permission_classes = [IsAuthenticated, ObjectPermission]
     queryset = Contributor.objects.all()
     serializer_class = ContributorsSerializer
 
@@ -103,7 +103,7 @@ class ContributorsView(ModelViewSet):
 
 
 class IssuesView(ModelViewSet):
-    permission_classes = [IsAuthenticated, ProjectPermission]
+    permission_classes = [IsAuthenticated, ObjectPermission]
     serializer_class = IssueSerializer
 
     def list(self, request, *args, **kwargs):
@@ -116,6 +116,7 @@ class IssuesView(ModelViewSet):
     # creates a new project
     def create(self, request, *args, **kwargs):
         project = get_object_or_404(Project, id=kwargs['project_id'])
+        """get the assignee user and controll if he is a contributor :"""
         if 'assignee' in kwargs:
             assignee = get_object_or_404(User, id=kwargs['assignee'])
             if not Contributor.objects.filter(project=project).filter(contributor=assignee).exists():
@@ -126,9 +127,27 @@ class IssuesView(ModelViewSet):
         else:
             assignee = request.user
         serializer = self.serializer_class(data=request.data)
-        """control if the assignee user is a contributor :"""
         if serializer.is_valid():
             serializer.save(author=request.user, project=project, assignee=assignee)
             return response.Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def update(self, request, *args, **kwargs):
+        obj = get_object_or_404(Issue, id=kwargs['issue_id'])
+        self.check_object_permissions(self.request, obj)
+        serializer = self.serializer_class(obj, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return response.Response(serializer.data)
+        return response.Response(serializer.errors,
+                                 status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        obj = get_object_or_404(Issue, id=kwargs['issue_id'])
+        self.check_object_permissions(self.request, obj)
+        title = obj.title
+        self.perform_destroy(obj)
+        message = 'Vous avez supprimé le problème :' + str(title)
+        return response.Response({'message': message},
+                                 status=status.HTTP_204_NO_CONTENT)

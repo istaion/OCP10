@@ -1,7 +1,7 @@
 from projects.models import Project, Issue, Contributor
 from rest_framework.permissions import BasePermission
 
-class ProjectPermission(BasePermission):
+class ObjectPermission(BasePermission):
     def has_permission(self, request, view):
         if Contributor.objects.filter(contributor=request.user).filter(project=view.kwargs['project_id']).exists():
             return True
@@ -13,3 +13,4 @@ class ProjectPermission(BasePermission):
             return obj.author == request.user
         else:
             return False
+
