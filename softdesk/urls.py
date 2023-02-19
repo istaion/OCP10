@@ -26,6 +26,7 @@ from projects.views import (
     ContributorsView,
     IssuesView,
     CommentView,
+    CommentIdView
 )
 
 
@@ -45,4 +46,6 @@ urlpatterns = [
                                                               'delete': 'delete'})),
     path('projects/<int:project_id>/issues/<int:issue_id>/comments/', CommentView.as_view({'get': 'list',
                                                                                            'post': 'create'})),
+    path('projects/<int:project_id>/issues/<int:issue_id>/comments/<int:comment_id>/',
+         CommentIdView.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'delete'})),
 ]

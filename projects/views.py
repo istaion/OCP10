@@ -40,7 +40,6 @@ class ProjectsView(ModelViewSet):
 
 class ProjectIdView(ModelViewSet):
     permission_classes = [IsAuthenticated, ObjectPermission]
-    queryset = Project.objects.all()
     serializer_class = ProjectIdSerializer
 
     def retrieve (self, request, *args, **kwargs):
@@ -69,7 +68,6 @@ class ProjectIdView(ModelViewSet):
 
 class ContributorsView(ModelViewSet):
     permission_classes = [IsAuthenticated, ObjectPermission]
-    queryset = Contributor.objects.all()
     serializer_class = ContributorsSerializer
 
     def list(self, request, *args, **kwargs):
@@ -117,11 +115,11 @@ class IssuesView(ModelViewSet):
     def create(self, request, *args, **kwargs):
         project = get_object_or_404(Project, id=kwargs['project_id'])
         """get the assignee user and controll if he is a contributor :"""
-        if 'assignee' in kwargs:
-            assignee = get_object_or_404(User, id=kwargs['assignee'])
+        if 'assignee' in request.data:
+            assignee = get_object_or_404(User, id=request.data['assignee'])
             if not Contributor.objects.filter(project=project).filter(contributor=assignee).exists():
                 name = assignee.username
-                message = 'L\'utilisateur :' + str(name) + 'ne fait pas parti du projet et ne peut être assigné.'
+                message = 'L\'utilisateur : ' + str(name) + ' ne fait pas parti du projet et ne peut être assigné.'
                 return response.Response({'message': message},
                                          status=status.HTTP_200_OK)
         else:
@@ -172,3 +170,33 @@ class CommentView(ModelViewSet):
             return response.Response(serializer.data, status=status.HTTP_201_CREATED)
         else:
             return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class CommentIdView(ModelViewSet):
+    permission_classes = [IsAuthenticated, ObjectPermission]
+    serializer_class = CommentsSerializer
+
+    def retrieve (self, request, *args, **kwargs):
+        obj = get_object_or_404(Comment, id=kwargs['comment_id'])
+        comment = self.serializer_class(obj, many=False)
+        return response.Response(comment.data, status=status.HTTP_200_OK)
+
+    def update(self, request, *args, **kwargs):
+        obj = get_object_or_404(Comment, id=kwargs['comment_id'])
+        self.check_object_permissions(self.request, obj)
+        serializer = self.serializer_class(obj, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return response.Response(serializer.data)
+        else:
+            return response.Response(serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        obj = get_object_or_404(Comment, id=kwargs['comment_id'])
+        self.check_object_permissions(self.request, obj)
+        description = obj.description
+        self.perform_destroy(obj)
+        message = 'Vous avez supprimé le commentaire :' + str(description)
+        return response.Response({'message': message},
+                        status=status.HTTP_204_NO_CONTENT)
