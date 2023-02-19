@@ -1,6 +1,6 @@
 from rest_framework.serializers import ModelSerializer
 
-from projects.models import Project, Issue, Contributor
+from projects.models import Project, Issue, Contributor, Comment
 
 
 class ProjectSerializer(ModelSerializer):
@@ -37,4 +37,14 @@ class ContributorsSerializer(ModelSerializer):
             'id': {'read_only': True},
             'project': {'read_only': True},
             'role': {'read_only': True}
+        }
+
+class CommentsSerializer(ModelSerializer):
+    class Meta:
+        model = Comment
+        fields = ['id', 'description']
+        extra_kwargs = {
+            'author': {'read_only': True},
+            'issue': {'read_only': True},
+            'created_time': {'read_only': True}
         }

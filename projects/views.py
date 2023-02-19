@@ -1,7 +1,8 @@
 from rest_framework import status, response
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from projects.models import Project, Issue, Contributor
-from projects.serializers import ProjectSerializer, IssueSerializer, ProjectIdSerializer, ContributorsSerializer
+from projects.models import Project, Issue, Contributor, Comment
+from projects.serializers import (ProjectSerializer, IssueSerializer, ProjectIdSerializer,
+                                  ContributorsSerializer, CommentsSerializer)
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
 from django.shortcuts import get_object_or_404
@@ -113,7 +114,6 @@ class IssuesView(ModelViewSet):
         return response.Response(serializer.data,
                                  status=status.HTTP_200_OK)
 
-    # creates a new project
     def create(self, request, *args, **kwargs):
         project = get_object_or_404(Project, id=kwargs['project_id'])
         """get the assignee user and controll if he is a contributor :"""
@@ -151,3 +151,24 @@ class IssuesView(ModelViewSet):
         message = 'Vous avez supprimé le problème :' + str(title)
         return response.Response({'message': message},
                                  status=status.HTTP_204_NO_CONTENT)
+
+
+class CommentView(ModelViewSet):
+    permission_classes = [IsAuthenticated, ObjectPermission]
+    serializer_class = CommentsSerializer
+
+    def list(self, request, *args, **kwargs):
+        issue = get_object_or_404(Issue, id=kwargs['issue_id'])
+        qs = Comment.objects.filter(issue=issue)
+        serializer = self.serializer_class(qs, many=True)
+        return response.Response(serializer.data,
+                                 status=status.HTTP_200_OK)
+
+    def create(self, request, *args, **kwargs):
+        issue = get_object_or_404(Issue, id=kwargs['issue_id'])
+        serializer = self.serializer_class(data=request.data)
+        if serializer.is_valid():
+            serializer.save(author=request.user, issue=issue)
+            return response.Response(serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

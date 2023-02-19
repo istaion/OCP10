@@ -25,6 +25,7 @@ from projects.views import (
     ProjectIdView,
     ContributorsView,
     IssuesView,
+    CommentView,
 )
 
 
@@ -42,5 +43,6 @@ urlpatterns = [
     path('projects/<int:project_id>/issues/', IssuesView.as_view({'get': 'list', 'post': 'create'})),
     path('projects/<int:project_id>/issues/<int:issue_id>/', IssuesView.as_view({'put': 'update',
                                                               'delete': 'delete'})),
-
+    path('projects/<int:project_id>/issues/<int:issue_id>/comments/', CommentView.as_view({'get': 'list',
+                                                                                           'post': 'create'})),
 ]
