@@ -15,16 +15,37 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework import routers
-from projects.views import ProjectViewset, IssueViewset
-
-router = routers.SimpleRouter()
-router.register('project', ProjectViewset, basename='project')
-router.register('issue', IssueViewset, basename='issue')
+from authentication.views import UserSignupView
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
+from projects.views import (
+    ProjectsView,
+    ProjectIdView,
+    ContributorsView,
+    IssuesView,
+    CommentView,
+    CommentIdView
+)
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api-auth/', include('rest_framework.urls')),
-    path('api/', include(router.urls)),
+    path('signup/', UserSignupView.as_view({'post': 'create'}), name='signup'),
+    path('login/', TokenObtainPairView.as_view(), name='login'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('projects/', ProjectsView.as_view({'get': 'list', 'post': 'create'})),
+    path('projects/<int:project_id>/', ProjectIdView.as_view({'get': 'retrieve', 'put': 'update',
+                                                              'delete': 'delete'})),
+    path('projects/<int:project_id>/users/', ContributorsView.as_view({'get': 'list', 'post': 'create'})),
+    path('projects/<int:project_id>/users/<int:user_id>/', ContributorsView.as_view({'delete': 'delete'})),
+    path('projects/<int:project_id>/issues/', IssuesView.as_view({'get': 'list', 'post': 'create'})),
+    path('projects/<int:project_id>/issues/<int:issue_id>/', IssuesView.as_view({'put': 'update',
+                                                              'delete': 'delete'})),
+    path('projects/<int:project_id>/issues/<int:issue_id>/comments/', CommentView.as_view({'get': 'list',
+                                                                                           'post': 'create'})),
+    path('projects/<int:project_id>/issues/<int:issue_id>/comments/<int:comment_id>/',
+         CommentIdView.as_view({'get': 'retrieve', 'put': 'update', 'delete': 'delete'})),
 ]
