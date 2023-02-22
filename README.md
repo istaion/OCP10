@@ -2,7 +2,7 @@
 
 Créez une API sécurisée RESTful en utilisant Django REST
 
-## utilisation
+## instalation
 
 Dans votre terminal placez-vous à la racine du projet puis :
 
@@ -32,13 +32,25 @@ env\\Scripts\\activate.bat
 pip install -r requirements.txt
 ```
 
-## Lancer le serveur :
+## Utilisation :
+
+### Génerer les migrations :
+
+```bash
+python manage.py makemigrations projects authentication
+```
+```bash
+python manage.py migrate
+```
+
+### Lancer le serveur :
 
 ```bash
 python manage.py runserver
 ```
 
-## API :
+### API :
 
 Vous pouvez retrouver les points d'accés dans la doc :
 [documentation API](https://documenter.getpostman.com/view/15931927/2s93CHuvQ9)
+
