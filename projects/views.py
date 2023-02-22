@@ -1,6 +1,6 @@
 from rest_framework import status, response
 from projects.models import Project, Issue, Contributor, Comment
-from projects.serializers import (ProjectSerializer, IssueSerializer, ProjectIdSerializer,
+from projects.serializers import (ProjectSerializer, IssueSerializer,
                                   ContributorsSerializer, CommentsSerializer)
 from rest_framework.viewsets import ModelViewSet
 from rest_framework.permissions import IsAuthenticated
@@ -38,7 +38,7 @@ class ProjectsView(ModelViewSet):
 
 class ProjectIdView(ModelViewSet):
     permission_classes = [IsAuthenticated, ObjectPermission]
-    serializer_class = ProjectIdSerializer
+    serializer_class = ProjectSerializer
 
     # get method
     def retrieve (self, request, *args, **kwargs):
