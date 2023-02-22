@@ -2,7 +2,7 @@
 
 Créez une API sécurisée RESTful en utilisant Django REST
 
-## utilisation
+## instalation
 
 Dans votre terminal placez-vous à la racine du projet puis :
 
