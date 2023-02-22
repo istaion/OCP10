@@ -37,6 +37,9 @@ pip install -r requirements.txt
 ### Génerer les migrations :
 
 ```bash
+python manage.py makemigrations projects authentication
+```
+```bash
 python manage.py migrate
 ```
 
