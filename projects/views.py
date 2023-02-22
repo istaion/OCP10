@@ -1,5 +1,4 @@
 from rest_framework import status, response
-from rest_framework.viewsets import ReadOnlyModelViewSet
 from projects.models import Project, Issue, Contributor, Comment
 from projects.serializers import (ProjectSerializer, IssueSerializer, ProjectIdSerializer,
                                   ContributorsSerializer, CommentsSerializer)
@@ -13,17 +12,16 @@ from authentication.models import User
 # /projects/
 class ProjectsView(ModelViewSet):
     permission_classes = [IsAuthenticated]
-    queryset = Project.objects.all()
     serializer_class = ProjectSerializer
 
-    # gets list of Projects
+    # method get
     def list(self, request, *args, **kwargs):
         qs = Project.objects.filter(contributors=request.user)
         serializer = self.serializer_class(qs, many=True)
         return response.Response(serializer.data,
                                  status=status.HTTP_200_OK)
 
-    # creates a new project
+    # method post
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
@@ -42,11 +40,13 @@ class ProjectIdView(ModelViewSet):
     permission_classes = [IsAuthenticated, ObjectPermission]
     serializer_class = ProjectIdSerializer
 
+    # get method
     def retrieve (self, request, *args, **kwargs):
         obj = get_object_or_404(Project, id=kwargs['project_id'])
         project = self.serializer_class(obj, many=False)
         return response.Response(project.data, status=status.HTTP_200_OK)
 
+    # put method
     def update(self, request, *args, **kwargs):
         obj = get_object_or_404(Project, id=kwargs['project_id'])
         self.check_object_permissions(self.request, obj)
@@ -70,6 +70,7 @@ class ContributorsView(ModelViewSet):
     permission_classes = [IsAuthenticated, ObjectPermission]
     serializer_class = ContributorsSerializer
 
+    # get method
     def list(self, request, *args, **kwargs):
         project = get_object_or_404(Project, id=kwargs['project_id'])
         qs = Contributor.objects.filter(project=project)
@@ -77,6 +78,7 @@ class ContributorsView(ModelViewSet):
         return response.Response(serializer.data,
                                  status=status.HTTP_200_OK)
 
+    # post method
     def create(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)
         project = get_object_or_404(Project, id=kwargs['project_id'])
@@ -105,6 +107,7 @@ class IssuesView(ModelViewSet):
     permission_classes = [IsAuthenticated, ObjectPermission]
     serializer_class = IssueSerializer
 
+    # get method
     def list(self, request, *args, **kwargs):
         project = get_object_or_404(Project, id=kwargs['project_id'])
         qs = Issue.objects.filter(project=project)
@@ -112,9 +115,10 @@ class IssuesView(ModelViewSet):
         return response.Response(serializer.data,
                                  status=status.HTTP_200_OK)
 
+    # post method
     def create(self, request, *args, **kwargs):
         project = get_object_or_404(Project, id=kwargs['project_id'])
-        """get the assignee user and controll if he is a contributor :"""
+        """get the assignee user and control if he is a contributor :"""
         if 'assignee' in request.data:
             assignee = get_object_or_404(User, id=request.data['assignee'])
             if not Contributor.objects.filter(project=project).filter(contributor=assignee).exists():
@@ -131,6 +135,7 @@ class IssuesView(ModelViewSet):
         else:
             return response.Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+    # put method
     def update(self, request, *args, **kwargs):
         obj = get_object_or_404(Issue, id=kwargs['issue_id'])
         self.check_object_permissions(self.request, obj)
@@ -155,6 +160,7 @@ class CommentView(ModelViewSet):
     permission_classes = [IsAuthenticated, ObjectPermission]
     serializer_class = CommentsSerializer
 
+    # get method
     def list(self, request, *args, **kwargs):
         issue = get_object_or_404(Issue, id=kwargs['issue_id'])
         qs = Comment.objects.filter(issue=issue)
@@ -162,6 +168,7 @@ class CommentView(ModelViewSet):
         return response.Response(serializer.data,
                                  status=status.HTTP_200_OK)
 
+    # post method
     def create(self, request, *args, **kwargs):
         issue = get_object_or_404(Issue, id=kwargs['issue_id'])
         serializer = self.serializer_class(data=request.data)
@@ -176,11 +183,13 @@ class CommentIdView(ModelViewSet):
     permission_classes = [IsAuthenticated, ObjectPermission]
     serializer_class = CommentsSerializer
 
+    # get method
     def retrieve (self, request, *args, **kwargs):
         obj = get_object_or_404(Comment, id=kwargs['comment_id'])
         comment = self.serializer_class(obj, many=False)
         return response.Response(comment.data, status=status.HTTP_200_OK)
 
+    # put method
     def update(self, request, *args, **kwargs):
         obj = get_object_or_404(Comment, id=kwargs['comment_id'])
         self.check_object_permissions(self.request, obj)
